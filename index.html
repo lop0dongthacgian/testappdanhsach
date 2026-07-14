@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quản lý Danh sách Đảng viên Chi bộ</title>
+<!-- SheetJS for Excel export -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --primary:#2c7a7a;
+    --primary-dark:#1a5a5a;
+    --primary-light:#e6f4f4;
+    --bg:#f0f5f5;
+    --card:#ffffff;
+    --border:#c5d5d5;
+    --text:#1a2a2a;
+    --muted:#5a7a7a;
+    --accent1:#4a9e9e;
+    --accent2:#6ab0b0;
+    --accent3:#8ac8c8;
+    --shadow:rgba(44,122,122,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg, #1a5a5a, #3a8a8a, #5ab0b0);
+    color:#fff;
+    padding:22px 20px 24px;
+    text-align:center;
+    box-shadow:0 4px 14px var(--shadow);
+  }
+  header h1{margin:0;font-size:19px;letter-spacing:.5px;}
+  header .sub{font-size:12px;opacity:.9;margin-top:4px;}
+  .container{max-width:1200px;margin:24px auto;padding:0 16px;}
+  .card{
+    background:var(--card);
+    border:none;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 2px 12px var(--shadow);
+  }
+  .hidden{display:none !important;}
+
+  /* Login */
+  .tabs{display:flex;gap:8px;margin-bottom:18px;background:#e6f0f0;padding:5px;border-radius:14px;}
+  .tab-btn{
+    flex:1;padding:11px;border:none;background:transparent;
+    border-radius:10px;cursor:pointer;font-weight:600;color:var(--muted);
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 2px 6px var(--shadow);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;}
+  .field input,.field select{
+    width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;font-size:14px;
+    background:#faffff;
+  }
+  .field input:focus,.field select:focus{
+    border-color:var(--primary);
+    outline:none;
+    box-shadow:0 0 0 3px rgba(44,122,122,0.15);
+  }
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .password-wrapper input {
+    flex: 1;
+    padding-right: 45px;
+  }
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--muted);
+    padding: 0 5px;
+  }
+  .btn{
+    padding:13px 18px;border:none;border-radius:14px;cursor:pointer;font-weight:600;font-size:14.5px;
+    min-height:46px;-webkit-tap-highlight-color:transparent;
+    transition:transform .08s ease, opacity .15s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(.97);opacity:.85;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:#e8f0f0;color:var(--text);}
+  .btn-secondary:hover{background:#d6e8e8;}
+  .btn-danger{background:#a33;color:#fff;}
+  .btn-success{background:#2a7a5a;color:#fff;}
+  .btn-success:hover{background:#1a5a42;}
+  .btn-logout{background:#f0e6ea;color:#7a3a4a;}
+  .btn-logout:hover{background:#e6d6de;}
+  .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+  .btn-row-center{justify-content:center;}
+  .msg{font-size:13px;margin-top:10px;padding:8px 10px;border-radius:6px;}
+  .msg.error{background:#fdeaea;color:#a33;}
+  .msg.success{background:#eaf7ea;color:#2a7a2a;}
+
+  /* Main app */
+  .topbar{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px;}
+  .topbar .who{font-size:13.5px;color:var(--muted);text-align:center;}
+  .actions{display:flex;justify-content:center;gap:10px;width:100%;max-width:480px;flex-wrap:wrap;}
+  .actions .btn{flex:1 1 auto;min-width:120px;text-align:center;}
+  .logout-btn{width:100%;max-width:220px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;}
+  th{background:#e6f0f0;position:sticky;top:0;color:var(--text);}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:#f0f8f8;}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:500px;overflow-y:auto;}
+  .search-box{padding:9px 12px;border:1px solid var(--border);border-radius:6px;min-width:200px;}
+  .search-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
+  .search-row .field{flex:1;min-width:150px;margin-bottom:0;}
+  .search-row .field select{max-width:200px;}
+  .search-row .field input{min-width:120px;}
+  .search-row .btn{height:42px;padding:0 18px;min-height:42px;}
+  .filter-tag{
+    display:inline-block;background:#e6f0f0;padding:4px 12px;border-radius:12px;
+    font-size:12px;margin:2px 4px 2px 0;color:var(--primary);
+  }
+  .filter-tag .remove{ cursor:pointer;margin-left:6px;font-weight:bold;}
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;
+  }
+  .modal{
+    background:#fff;border-radius:10px;max-width:680px;width:100%;
+    max-height:88vh;overflow-y:auto;padding:22px;
+  }
+  .modal h2{margin-top:0;font-size:17px;color:var(--primary);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin:30px 0;}
+  
+  .checkbox-group{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+  .checkbox-group label{font-size:13px;color:var(--text);display:flex;align-items:center;gap:4px;}
+  .checkbox-group input[type="checkbox"]{width:16px;height:16px;}
+  
+  .filter-group{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0;}
+  .filter-group .field{flex:1;min-width:120px;margin-bottom:0;}
+  .filter-group .field select{max-width:180px;}
+  .filter-group .field input{max-width:120px;}
+
+  .sort-group{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0;padding:12px;background:#f5fafa;border-radius:8px;}
+  .sort-group label{font-size:13px;color:var(--muted);margin-right:4px;}
+  .sort-group select{padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;}
+
+  /* Sheet Config */
+  .sheet-config-item {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 12px;
+    margin:4px 0;
+    background:#f8fafa;
+    border-radius:6px;
+    border:1px solid var(--border);
+    cursor:grab;
+    transition:all 0.15s ease;
+  }
+  .sheet-config-item.dragging {
+    opacity:0.5;
+    cursor:grabbing;
+    background:#e8f0f0;
+  }
+  .sheet-config-item .drag-handle {
+    color:var(--muted);
+    font-size:18px;
+    cursor:grab;
+    user-select:none;
+  }
+  .sheet-config-item .col-name {
+    flex:1;
+    font-size:14px;
+  }
+  .sheet-config-item .col-remove {
+    color:#a33;
+    cursor:pointer;
+    font-weight:bold;
+    padding:0 4px;
+  }
+  .sheet-config-item .col-remove:hover {opacity:0.7;}
+  .sheet-config-item input[type="text"] {
+    flex:1;
+    padding:4px 8px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-size:13px;
+    background:#fff;
+  }
+  .sheet-config-item input[type="text"]:focus {
+    border-color:var(--primary);
+    outline:none;
+    box-shadow:0 0 0 2px rgba(44,122,122,0.15);
+  }
+  .add-col-row {
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+  }
+  .add-col-row input {
+    flex:1;
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:14px;
+  }
+  .add-col-row input:focus {
+    border-color:var(--primary);
+    outline:none;
+    box-shadow:0 0 0 2px rgba(44,122,122,0.15);
+  }
+  .sheet-config-actions {
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .sheet-config-actions .btn {min-width:100px;}
+  
+  .click-hint {
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:4px;
+    margin-bottom:12px;
+    font-style:italic;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DANH SÁCH ĐẢNG VIÊN CHI BỘ</h1>
+  <div class="sub">Hệ thống quản lý &amp; chỉnh sửa thông tin đảng viên</div>
+</header>
+
+<div class="container">
+
+  <!-- ============ LOGIN SCREEN ============ -->
+  <div id="loginScreen" class="card">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabMemberBtn" onclick="switchTab('member')">Đảng viên</button>
+      <button class="tab-btn" id="tabAdminBtn" onclick="switchTab('admin')">Quản trị (Admin)</button>
+    </div>
+
+    <!-- Member login -->
+    <div id="memberLoginForm">
+      <div class="field">
+        <label>CCCD</label>
+        <input type="text" id="memberCccdInput" placeholder="Nhập số CCCD" autocomplete="off" />
+      </div>
+      <div class="field hidden" id="memberPasswordField">
+        <label>Mật khẩu</label>
+        <div class="password-wrapper">
+          <input type="password" id="memberPasswordInput" placeholder="Nhập mật khẩu" />
+          <button type="button" class="toggle-password" onclick="togglePassword('memberPasswordInput', this)">👁️</button>
+        </div>
+      </div>
+      <div class="btn-row btn-row-center">
+        <button class="btn btn-primary" onclick="doMemberLogin()">Đăng nhập</button>
+      </div>
+      <div id="memberLoginMsg"></div>
+    </div>
+
+    <!-- Admin login -->
+    <div id="adminLoginForm" class="hidden">
+      <div class="field">
+        <label>Mật khẩu quản trị</label>
+        <div class="password-wrapper">
+          <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu admin" />
+          <button type="button" class="toggle-password" onclick="togglePassword('adminPasswordInput', this)">👁️</button>
+        </div>
+      </div>
+      <div class="btn-row btn-row-center">
+        <button class="btn btn-primary" onclick="doAdminLogin()">Đăng nhập</button>
+      </div>
+      <div id="adminLoginMsg"></div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN SCREEN ============ -->
+  <div id="mainScreen" class="hidden">
+    <div class="topbar">
+      <div class="who" id="whoAmI"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="addMemberBtn" onclick="openAddModal()" style="display:none;">+ Thêm đảng viên</button>
+        <button class="btn btn-secondary" onclick="openExportModal()" style="display:none;" id="exportBtn">📤 Xuất Excel</button>
+        <button class="btn btn-secondary" id="sheetConfigBtn" onclick="openSheetConfigModal()" style="display:none;">⚙️ Cài đặt sheet</button>
+        <button class="btn btn-secondary" onclick="openChangePasswordModal()">🔑 Đổi mật khẩu</button>
+      </div>
+      <button class="btn btn-logout logout-btn" onclick="doLogout()">Đăng xuất</button>
+    </div>
+
+    <div class="card">
+      <div class="click-hint">💡 Nhấn vào dòng để xem chi tiết đảng viên</div>
+      
+      <!-- Search & Filter - Admin only -->
+      <div id="searchBar" class="hidden">
+        <div class="search-row">
+          <div class="field" style="flex:2;">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 Tìm theo họ tên hoặc CCCD..." oninput="applyFilters()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead id="tableHeader">
+            <tr></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted);text-align:right;">
+        Tổng: <span id="totalCount">0</span> đảng viên
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Quản lý danh sách đảng viên · Chi bộ khu dân cư</footer>
+
+<!-- ============ EDIT MEMBER MODAL ============ -->
+<div class="modal-overlay hidden" id="editModalOverlay">
+  <div class="modal">
+    <h2 id="editModalTitle">Thông tin đảng viên</h2>
+    <div class="grid2" id="editFormFields"></div>
+    <div id="editModalMsg"></div>
+    <div class="btn-row">
+      <button class="btn btn-danger hidden" id="deleteBtn" onclick="deleteCurrentMember()">Xoá</button>
+      <button class="btn btn-secondary" onclick="closeEditModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="saveEditModal()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHANGE PASSWORD MODAL ============ -->
+<div class="modal-overlay hidden" id="pwModalOverlay">
+  <div class="modal" style="max-width:420px;">
+    <h2>Đổi mật khẩu</h2>
+    <div class="field">
+      <label>Mật khẩu hiện tại</label>
+      <div class="password-wrapper">
+        <input type="password" id="pwOld" />
+        <button type="button" class="toggle-password" onclick="togglePassword('pwOld', this)">👁️</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Mật khẩu mới</label>
+      <div class="password-wrapper">
+        <input type="password" id="pwNew" />
+        <button type="button" class="toggle-password" onclick="togglePassword('pwNew', this)">👁️</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Nhập lại mật khẩu mới</label>
+      <div class="password-wrapper">
+        <input type="password" id="pwNewConfirm" />
+        <button type="button" class="toggle-password" onclick="togglePassword('pwNewConfirm', this)">👁️</button>
+      </div>
+    </div>
+    <div id="pwModalMsg"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closePwModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="submitChangePassword()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SHEET CONFIG MODAL ============ -->
+<div class="modal-overlay hidden" id="sheetConfigModalOverlay">
+  <div class="modal" style="max-width:700px;">
+    <h2>⚙️ Cài đặt sheet</h2>
+    <p style="font-size:13px;color:var(--muted);margin-top:-8px;">
+      Kéo thả các cột để sắp xếp lại. Nhấn "Lưu" để áp dụng thay đổi.
+    </p>
+    
+    <div class="field">
+      <label>Tiêu đề sheet</label>
+      <input type="text" id="sheetTitleInput" value="DANH SÁCH ĐẢNG VIÊN CHI BỘ" />
+    </div>
+    
+    <div style="margin-top:16px;">
+      <label style="font-weight:600;font-size:14px;">Danh sách cột</label>
+      <div id="columnList" style="margin-top:8px;"></div>
+    </div>
+    
+    <div class="add-col-row">
+      <input type="text" id="newColumnName" placeholder="Tên cột mới..." />
+      <button class="btn btn-secondary" onclick="addNewColumn()">+ Thêm</button>
+    </div>
+    
+    <div id="sheetConfigMsg"></div>
+    <div class="sheet-config-actions">
+      <button class="btn btn-secondary" onclick="closeSheetConfigModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="saveSheetConfig()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXPORT MODAL ============ -->
+<div class="modal-overlay hidden" id="exportModalOverlay">
+  <div class="modal" style="max-width:620px;">
+    <h2>📤 Xuất danh sách Excel</h2>
+    
+    <div class="sort-group">
+      <label><strong>Sắp xếp theo:</strong></label>
+      <select id="exportSortField">
+        <option value="ho_ten">Họ và tên</option>
+      </select>
+      <select id="exportSortOrder">
+        <option value="asc">Tăng dần</option>
+        <option value="desc">Giảm dần</option>
+      </select>
+    </div>
+    
+    <p style="font-size:13px;color:var(--muted);">Chọn các cột muốn xuất (bỏ chọn để không xuất).</p>
+    <div class="checkbox-group" id="exportColumns"></div>
+    <div style="margin-top:12px;">
+      <label style="font-size:13px;color:var(--muted);">
+        <input type="checkbox" id="exportAllColumns" checked onchange="toggleAllExportColumns()" /> 
+        Chọn tất cả
+      </label>
+    </div>
+    <div id="exportModalMsg"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeExportModal()">Hủy</button>
+      <button class="btn btn-success" onclick="doExportExcel()">⬇ Tải xuống</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CẤU HÌNH: Link Apps Script được gọi qua /api/proxy
+   ========================================================= */
+const API_URL = "/api/proxy";
+
+// Các trường luôn có trong config (không thể xóa)
+const REQUIRED_FIELDS = ["STT", "Họ và tên", "CCCD"];
+
+// Các trường có thể hiển thị trong form chỉnh sửa (trừ STT và MatKhau)
+const EDITABLE_FIELDS = [
+  "Họ và tên", "Ngày sinh", "Ngày vào đảng", "Ngày chính thức",
+  "Dân tộc", "Tôn giáo", "CCCD", "Thẻ đảng viên", "Học vấn (Vd: 10/10, 12/12...)",
+  "Chuyên môn", "LLCT", "Số điện thoại", "Chi bộ cũ",
+  "Miễn sinh hoạt", "Nơi thường trú"
+];
+
+let session = { role: null, cccd: null, password: null, adminPassword: null };
+let members = [];
+let filteredMembers = [];
+let currentEdit = null;
+let isAddMode = false;
+let displayHeaders = [];
+
+// Biến cho drag & drop cột
+let dragItem = null;
+let dragOverItem = null;
+
+/* ---------- toggle hiển thị mật khẩu ---------- */
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === "password") {
+    input.type = "text";
+    btn.textContent = "🙈";
+  } else {
+    input.type = "password";
+    btn.textContent = "👁️";
+  }
+}
+
+/* ---------- gọi API ---------- */
+async function apiCall(action, data) {
+  const body = Object.assign({ action }, data || {});
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+/* ---------- tabs ---------- */
+function switchTab(tab) {
+  document.getElementById("tabMemberBtn").classList.toggle("active", tab === "member");
+  document.getElementById("tabAdminBtn").classList.toggle("active", tab === "admin");
+  document.getElementById("memberLoginForm").classList.toggle("hidden", tab !== "member");
+  document.getElementById("adminLoginForm").classList.toggle("hidden", tab !== "admin");
+}
+
+function showMsg(elId, message, isError) {
+  const el = document.getElementById(elId);
+  el.innerHTML = message ? `<div class="msg ${isError ? "error" : "success"}">${message}</div>` : "";
+}
+
+/* ---------- đăng nhập đảng viên ---------- */
+async function doMemberLogin() {
+  const cccd = document.getElementById("memberCccdInput").value.trim();
+  const password = document.getElementById("memberPasswordInput").value;
+  if (!cccd) { showMsg("memberLoginMsg", "Vui lòng nhập số CCCD.", true); return; }
+
+  showMsg("memberLoginMsg", "Đang xử lý...", false);
+  try {
+    const result = await apiCall("memberLogin", { cccd, password });
+    if (result.success) {
+      session = { role: "member", cccd, password: password || cccd };
+      await loadAllMembers();
+      showMsg("memberLoginMsg", "");
+      enterMainScreen();
+    } else if (result.requirePassword) {
+      document.getElementById("memberPasswordField").classList.remove("hidden");
+      showMsg("memberLoginMsg", result.message, true);
+    } else {
+      showMsg("memberLoginMsg", result.message || "Đăng nhập thất bại.", true);
+    }
+  } catch (err) {
+    showMsg("memberLoginMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+/* ---------- đăng nhập admin ---------- */
+async function doAdminLogin() {
+  const password = document.getElementById("adminPasswordInput").value;
+  showMsg("adminLoginMsg", "Đang xử lý...", false);
+  try {
+    const result = await apiCall("adminLogin", { password });
+    if (result.success) {
+      session = { role: "admin", adminPassword: password };
+      showMsg("adminLoginMsg", "");
+      await loadAllMembers();
+      enterMainScreen();
+    } else {
+      showMsg("adminLoginMsg", result.message || "Sai mật khẩu.", true);
+    }
+  } catch (err) {
+    showMsg("adminLoginMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+async function loadAllMembers() {
+  if (session.role === "admin") {
+    const result = await apiCall("getAllMembers", { adminPassword: session.adminPassword });
+    if (result.success) {
+      members = result.data || [];
+      if (members.length > 0) {
+        displayHeaders = Object.keys(members[0]).filter(k => k !== "__rowIndex" && k !== "MatKhau");
+      }
+      filteredMembers = [...members];
+    }
+  } else if (session.role === "member") {
+    const result = await apiCall("memberLogin", { cccd: session.cccd, password: session.password });
+    if (result.success && result.data) {
+      members = [result.data];
+      if (members.length > 0) {
+        displayHeaders = Object.keys(members[0]).filter(k => k !== "__rowIndex" && k !== "MatKhau");
+      }
+      filteredMembers = [...members];
+    }
+  }
+}
+
+/* ---------- màn hình chính ---------- */
+function enterMainScreen() {
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("mainScreen").classList.remove("hidden");
+  document.getElementById("whoAmI").textContent =
+    session.role === "admin" ? "Đăng nhập với vai trò: Quản trị viên" : "Đăng nhập với vai trò: Đảng viên (CCCD: " + session.cccd + ")";
+  const isAdmin = session.role === "admin";
+  document.getElementById("addMemberBtn").style.display = isAdmin ? "inline-block" : "none";
+  document.getElementById("exportBtn").style.display = isAdmin ? "inline-block" : "none";
+  document.getElementById("sheetConfigBtn").style.display = isAdmin ? "inline-block" : "none";
+  document.getElementById("searchBar").classList.toggle("hidden", !isAdmin);
+  renderTable();
+}
+
+function doLogout() {
+  session = { role: null, cccd: null, password: null, adminPassword: null };
+  members = [];
+  filteredMembers = [];
+  document.getElementById("mainScreen").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("memberPasswordField").classList.add("hidden");
+  document.getElementById("memberPasswordInput").value = "";
+  document.getElementById("memberCccdInput").value = "";
+  document.getElementById("adminPasswordInput").value = "";
+}
+
+/* ---------- tính tuổi ---------- */
+function getAge(dateStr) {
+  if (!dateStr) return null;
+  try {
+    let d;
+    if (typeof dateStr === 'string') {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      } else {
+        d = new Date(dateStr);
+      }
+    } else if (dateStr instanceof Date) {
+      d = dateStr;
+    } else {
+      d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age;
+  } catch (e) { return null; }
+}
+
+function getGivenName(fullName) {
+  if (!fullName) return "";
+  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+  return parts.length ? parts[parts.length - 1].toLowerCase() : "";
+}
+
+function getPartyAge(joinDate) {
+  if (!joinDate) return null;
+  try {
+    let d;
+    if (typeof joinDate === 'string') {
+      const parts = joinDate.split('/');
+      if (parts.length === 3) {
+        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      } else {
+        d = new Date(joinDate);
+      }
+    } else if (joinDate instanceof Date) {
+      d = joinDate;
+    } else {
+      d = new Date(joinDate);
+    }
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age;
+  } catch (e) { return null; }
+}
+
+/* ---------- hiển thị bảng ---------- */
+function renderTable() {
+  const thead = document.getElementById("tableHeader");
+  const tbody = document.getElementById("tableBody");
+  
+  const headerRow = thead.querySelector("tr");
+  headerRow.innerHTML = "";
+  
+  const displayCols = [
+    "STT", "Họ và tên", "Ngày sinh", "Tuổi đời", 
+    "Ngày vào đảng", "Tuổi đảng", "CCCD", "Số điện thoại", "Nơi thường trú"
+  ];
+  
+  displayCols.forEach(col => {
+    const th = document.createElement("th");
+    th.textContent = col;
+    headerRow.appendChild(th);
+  });
+  
+  const searchText = (document.getElementById("searchInput")?.value || "").toLowerCase();
+  
+  let data = members;
+  
+  if (searchText && session.role === "admin") {
+    data = data.filter(m => {
+      const name = String(m["Họ và tên"]).toLowerCase();
+      const cccd = String(m["CCCD"]).toLowerCase();
+      return name.includes(searchText) || cccd.includes(searchText);
+    });
+  }
+  
+  data = [...data].sort((a, b) =>
+    getGivenName(a["Họ và tên"]).localeCompare(getGivenName(b["Họ và tên"]), "vi")
+  );
+  
+  filteredMembers = data;
+  
+  tbody.innerHTML = "";
+  
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${displayCols.length}" style="text-align:center;padding:30px;color:var(--muted);">Không tìm thấy đảng viên nào</td></tr>`;
+    document.getElementById("totalCount").textContent = "0";
+    return;
+  }
+  
+  data.forEach((m, idx) => {
+    const tr = document.createElement("tr");
+    tr.onclick = () => openEditModal(m);
+    const tuoiDoi = getAge(m["Ngày sinh"]);
+    const tuoiDang = getPartyAge(m["Ngày vào đảng"]);
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td>${m["Họ và tên"] || ""}</td>
+      <td>${m["Ngày sinh"] || ""}</td>
+      <td>${tuoiDoi !== null ? tuoiDoi : ""}</td>
+      <td>${m["Ngày vào đảng"] || ""}</td>
+      <td>${tuoiDang !== null ? tuoiDang : ""}</td>
+      <td>${m["CCCD"] || ""}</td>
+      <td>${m["Số điện thoại"] || ""}</td>
+      <td>${m["Nơi thường trú"] || ""}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  document.getElementById("totalCount").textContent = data.length;
+}
+
+function applyFilters() {
+  renderTable();
+}
+
+/* ---------- modal chỉnh sửa ---------- */
+function buildEditForm(record) {
+  const container = document.getElementById("editFormFields");
+  container.innerHTML = "";
+  
+  const fields = EDITABLE_FIELDS.slice();
+  if (session.role === "admin" && !isAddMode) {
+    fields.push("Mật khẩu");
+  }
+  
+  fields.forEach(f => {
+    const wrap = document.createElement("div");
+    wrap.className = "field";
+    
+    let disabled = "";
+    if (f === "CCCD" && session.role !== "admin" && !isAddMode) {
+      disabled = "disabled";
+    }
+    
+    let value = "";
+    if (record && record[f] !== undefined && record[f] !== null) {
+      value = record[f];
+    } else if (f === "LLCT" && record && record["Lý luận chính trị"] !== undefined) {
+      // Trường hợp sheet dùng "LLCT" nhưng record có "Lý luận chính trị"
+      value = record["Lý luận chính trị"];
+    }
+    
+    let inputHtml = '';
+    if (f === "Mật khẩu" && session.role === "admin") {
+      const passValue = (record && record["MatKhau"]) || "";
+      const inputId = 'pass_' + Math.random().toString(36).substr(2, 9);
+      inputHtml = `
+        <div class="password-wrapper">
+          <input type="password" id="${inputId}" data-key="Mật khẩu" value="${passValue}" 
+                 placeholder="Nhập mật khẩu mới (để trống nếu không đổi)" />
+          <button type="button" class="toggle-password" onclick="togglePassword('${inputId}', this)">👁️</button>
+        </div>
+      `;
+    } else {
+      let displayValue = value || "";
+      if (typeof displayValue === 'object' && displayValue instanceof Date) {
+        displayValue = formatDate(displayValue);
+      }
+      let dataKey = f;
+      if (f === "LLCT") {
+        dataKey = "LLCT";
+      }
+      inputHtml = `
+        <input type="text" data-key="${dataKey}" value="${displayValue}" ${disabled} />
+      `;
+    }
+    
+    wrap.innerHTML = `
+      <label>${f}</label>
+      ${inputHtml}
+    `;
+    container.appendChild(wrap);
+  });
+}
+
+function formatDate(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function openEditModal(record) {
+  isAddMode = false;
+  currentEdit = record;
+  document.getElementById("editModalTitle").textContent = "Chi tiết đảng viên";
+  document.getElementById("deleteBtn").classList.toggle("hidden", session.role !== "admin");
+  buildEditForm(record);
+  showMsg("editModalMsg", "");
+  document.getElementById("editModalOverlay").classList.remove("hidden");
+}
+
+function openAddModal() {
+  isAddMode = true;
+  currentEdit = null;
+  document.getElementById("editModalTitle").textContent = "Thêm đảng viên mới";
+  document.getElementById("deleteBtn").classList.add("hidden");
+  buildEditForm({});
+  showMsg("editModalMsg", "");
+  document.getElementById("editModalOverlay").classList.remove("hidden");
+}
+
+function closeEditModal() {
+  document.getElementById("editModalOverlay").classList.add("hidden");
+  currentEdit = null;
+  isAddMode = false;
+}
+
+function collectFormRecord() {
+  const inputs = document.querySelectorAll("#editFormFields input");
+  const record = {};
+  inputs.forEach(inp => { 
+    const key = inp.dataset.key;
+    if (key) {
+      record[key] = inp.value;
+    }
+  });
+  return record;
+}
+
+async function saveEditModal() {
+  const record = collectFormRecord();
+  showMsg("editModalMsg", "Đang lưu...", false);
+  try {
+    let result;
+    
+    if (session.role === "admin" && record["Mật khẩu"] !== undefined && record["Mật khẩu"].trim() !== "") {
+      const cccd = currentEdit ? currentEdit["CCCD"] : record["CCCD"];
+      const passResult = await apiCall("adminChangeMemberPassword", {
+        adminPassword: session.adminPassword,
+        cccd: cccd,
+        newPassword: record["Mật khẩu"]
+      });
+      if (!passResult.success) {
+        showMsg("editModalMsg", passResult.message || "Lỗi cập nhật mật khẩu.", true);
+        return;
+      }
+      delete record["Mật khẩu"];
+    }
+    
+    if (isAddMode) {
+      result = await apiCall("adminAddMember", { adminPassword: session.adminPassword, record });
+    } else if (session.role === "admin") {
+      result = await apiCall("adminUpdateMember", {
+        adminPassword: session.adminPassword,
+        rowIndex: currentEdit["__rowIndex"],
+        record
+      });
+    } else {
+      result = await apiCall("updateMember", {
+        cccd: session.cccd,
+        password: session.password,
+        record
+      });
+    }
+
+    if (result.success) {
+      await loadAllMembers();
+      renderTable();
+      closeEditModal();
+    } else {
+      showMsg("editModalMsg", result.message || "Có lỗi xảy ra.", true);
+    }
+  } catch (err) {
+    showMsg("editModalMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+async function deleteCurrentMember() {
+  if (!currentEdit || session.role !== "admin") return;
+  if (!confirm("Bạn có chắc muốn xoá đảng viên này?")) return;
+  showMsg("editModalMsg", "Đang xoá...", false);
+  try {
+    const result = await apiCall("adminDeleteMember", {
+      adminPassword: session.adminPassword,
+      rowIndex: currentEdit["__rowIndex"]
+    });
+    if (result.success) {
+      await loadAllMembers();
+      renderTable();
+      closeEditModal();
+    } else {
+      showMsg("editModalMsg", result.message || "Có lỗi xảy ra.", true);
+    }
+  } catch (err) {
+    showMsg("editModalMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+/* ---------- đổi mật khẩu ---------- */
+function openChangePasswordModal() {
+  document.getElementById("pwOld").value = "";
+  document.getElementById("pwNew").value = "";
+  document.getElementById("pwNewConfirm").value = "";
+  showMsg("pwModalMsg", "");
+  document.getElementById("pwModalOverlay").classList.remove("hidden");
+}
+
+function closePwModal() {
+  document.getElementById("pwModalOverlay").classList.add("hidden");
+}
+
+async function submitChangePassword() {
+  const oldPass = document.getElementById("pwOld").value;
+  const newPass = document.getElementById("pwNew").value;
+  const confirmPass = document.getElementById("pwNewConfirm").value;
+  if (!newPass || newPass !== confirmPass) {
+    showMsg("pwModalMsg", "Mật khẩu mới không khớp.", true);
+    return;
+  }
+  if (newPass.length < 6) {
+    showMsg("pwModalMsg", "Mật khẩu mới phải có ít nhất 6 ký tự.", true);
+    return;
+  }
+  showMsg("pwModalMsg", "Đang xử lý...", false);
+  try {
+    let result;
+    if (session.role === "admin") {
+      result = await apiCall("changeAdminPassword", { oldPassword: oldPass, newPassword: newPass });
+      if (result.success) session.adminPassword = newPass;
+    } else {
+      result = await apiCall("changeMemberPassword", { cccd: session.cccd, oldPassword: oldPass, newPassword: newPass });
+      if (result.success) session.password = newPass;
+    }
+    if (result.success) {
+      showMsg("pwModalMsg", result.message || "Đổi mật khẩu thành công.", false);
+      setTimeout(closePwModal, 1200);
+    } else {
+      showMsg("pwModalMsg", result.message || "Có lỗi xảy ra.", true);
+    }
+  } catch (err) {
+    showMsg("pwModalMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+/* ---------- SHEET CONFIG ---------- */
+async function openSheetConfigModal() {
+  if (session.role !== "admin") return;
+  
+  showMsg("sheetConfigMsg", "Đang tải cấu hình...", false);
+  try {
+    const result = await apiCall("getSheetConfig", { adminPassword: session.adminPassword });
+    if (result.success) {
+      document.getElementById("sheetTitleInput").value = result.config.title || "DANH SÁCH ĐẢNG VIÊN CHI BỘ";
+      renderColumnList(result.config.headers || []);
+      document.getElementById("sheetConfigMsg").innerHTML = "";
+      document.getElementById("sheetConfigModalOverlay").classList.remove("hidden");
+    } else {
+      showMsg("sheetConfigMsg", result.message || "Lỗi tải cấu hình.", true);
+    }
+  } catch (err) {
+    showMsg("sheetConfigMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+function closeSheetConfigModal() {
+  document.getElementById("sheetConfigModalOverlay").classList.add("hidden");
+}
+
+function renderColumnList(headers) {
+  const container = document.getElementById("columnList");
+  container.innerHTML = "";
+  
+  headers.forEach((col, index) => {
+    const div = document.createElement("div");
+    div.className = "sheet-config-item";
+    div.draggable = true;
+    div.dataset.index = index;
+    
+    const handle = document.createElement("span");
+    handle.className = "drag-handle";
+    handle.textContent = "⠿";
+    handle.title = "Kéo để sắp xếp lại";
+    
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "col-name-input";
+    nameInput.value = col;
+    nameInput.placeholder = "Tên cột";
+    nameInput.dataset.original = col;
+    
+    const removeBtn = document.createElement("span");
+    removeBtn.className = "col-remove";
+    removeBtn.textContent = "✕";
+    removeBtn.title = "Xóa cột";
+    if (REQUIRED_FIELDS.includes(col)) {
+      removeBtn.style.opacity = "0.3";
+      removeBtn.style.cursor = "not-allowed";
+    } else {
+      removeBtn.onclick = function(e) {
+        e.stopPropagation();
+        removeColumn(index);
+      };
+    }
+    
+    div.appendChild(handle);
+    div.appendChild(nameInput);
+    div.appendChild(removeBtn);
+    
+    // Drag events
+    div.addEventListener("dragstart", function(e) {
+      dragItem = this;
+      this.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/html", this.innerHTML);
+    });
+    
+    div.addEventListener("dragend", function() {
+      this.classList.remove("dragging");
+      dragItem = null;
+      dragOverItem = null;
+      document.querySelectorAll(".sheet-config-item").forEach(el => {
+        el.style.borderTop = "none";
+        el.style.borderBottom = "none";
+      });
+    });
+    
+    div.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      
+      document.querySelectorAll(".sheet-config-item").forEach(el => {
+        el.style.borderTop = "none";
+        el.style.borderBottom = "none";
+      });
+      
+      const rect = this.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      if (y < rect.height / 2) {
+        this.style.borderTop = "2px solid var(--primary)";
+        this.style.borderBottom = "none";
+      } else {
+        this.style.borderTop = "none";
+        this.style.borderBottom = "2px solid var(--primary)";
+      }
+      
+      dragOverItem = this;
+    });
+    
+    div.addEventListener("dragleave", function(e) {
+      this.style.borderTop = "none";
+      this.style.borderBottom = "none";
+    });
+    
+    div.addEventListener("drop", function(e) {
+      e.preventDefault();
+      this.style.borderTop = "none";
+      this.style.borderBottom = "none";
+      
+      if (dragItem && dragItem !== this) {
+        const items = Array.from(container.children);
+        const fromIndex = items.indexOf(dragItem);
+        const toIndex = items.indexOf(this);
+        
+        if (fromIndex < toIndex) {
+          this.parentNode.insertBefore(dragItem, this.nextSibling);
+        } else {
+          this.parentNode.insertBefore(dragItem, this);
+        }
+        updateColumnIndices();
+      }
+    });
+    
+    container.appendChild(div);
+  });
+}
+
+function updateColumnIndices() {
+  const items = document.querySelectorAll(".sheet-config-item");
+  items.forEach((el, idx) => {
+    el.dataset.index = idx;
+  });
+}
+
+function addNewColumn() {
+  const input = document.getElementById("newColumnName");
+  const name = input.value.trim();
+  if (!name) {
+    showMsg("sheetConfigMsg", "Vui lòng nhập tên cột.", true);
+    return;
+  }
+  if (REQUIRED_FIELDS.includes(name)) {
+    showMsg("sheetConfigMsg", `"${name}" là cột bắt buộc, không thể thêm lại.`, true);
+    return;
+  }
+  
+  const existing = document.querySelectorAll(".col-name-input");
+  for (let el of existing) {
+    if (el.value.trim() === name) {
+      showMsg("sheetConfigMsg", `Cột "${name}" đã tồn tại.`, true);
+      return;
+    }
+  }
+  
+  const container = document.getElementById("columnList");
+  const div = document.createElement("div");
+  div.className = "sheet-config-item";
+  div.draggable = true;
+  div.dataset.index = container.children.length;
+  
+  const handle = document.createElement("span");
+  handle.className = "drag-handle";
+  handle.textContent = "⠿";
+  
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "col-name-input";
+  nameInput.value = name;
+  nameInput.dataset.original = name;
+  
+  const removeBtn = document.createElement("span");
+  removeBtn.className = "col-remove";
+  removeBtn.textContent = "✕";
+  removeBtn.onclick = function(e) {
+    e.stopPropagation();
+    const idx = parseInt(div.dataset.index);
+    removeColumn(idx);
+  };
+  
+  div.appendChild(handle);
+  div.appendChild(nameInput);
+  div.appendChild(removeBtn);
+  
+  // Thêm drag events
+  div.addEventListener("dragstart", function(e) {
+    dragItem = this;
+    this.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/html", this.innerHTML);
+  });
+  
+  div.addEventListener("dragend", function() {
+    this.classList.remove("dragging");
+    dragItem = null;
+    dragOverItem = null;
+    document.querySelectorAll(".sheet-config-item").forEach(el => {
+      el.style.borderTop = "none";
+      el.style.borderBottom = "none";
+    });
+  });
+  
+  div.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    document.querySelectorAll(".sheet-config-item").forEach(el => {
+      el.style.borderTop = "none";
+      el.style.borderBottom = "none";
+    });
+    const rect = this.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    if (y < rect.height / 2) {
+      this.style.borderTop = "2px solid var(--primary)";
+    } else {
+      this.style.borderBottom = "2px solid var(--primary)";
+    }
+    dragOverItem = this;
+  });
+  
+  div.addEventListener("dragleave", function() {
+    this.style.borderTop = "none";
+    this.style.borderBottom = "none";
+  });
+  
+  div.addEventListener("drop", function(e) {
+    e.preventDefault();
+    this.style.borderTop = "none";
+    this.style.borderBottom = "none";
+    if (dragItem && dragItem !== this) {
+      const items = Array.from(container.children);
+      const fromIndex = items.indexOf(dragItem);
+      const toIndex = items.indexOf(this);
+      if (fromIndex < toIndex) {
+        this.parentNode.insertBefore(dragItem, this.nextSibling);
+      } else {
+        this.parentNode.insertBefore(dragItem, this);
+      }
+      updateColumnIndices();
+    }
+  });
+  
+  container.appendChild(div);
+  input.value = "";
+  showMsg("sheetConfigMsg", `Đã thêm cột "${name}"`, false);
+}
+
+function removeColumn(index) {
+  const items = document.querySelectorAll(".sheet-config-item");
+  const target = items[index];
+  const nameInput = target.querySelector(".col-name-input");
+  const colName = nameInput.value.trim();
+  
+  if (REQUIRED_FIELDS.includes(colName)) {
+    showMsg("sheetConfigMsg", `Không thể xóa cột bắt buộc: "${colName}"`, true);
+    return;
+  }
+  
+  if (!confirm(`Xóa cột "${colName}"?`)) return;
+  
+  target.remove();
+  updateColumnIndices();
+  showMsg("sheetConfigMsg", `Đã xóa cột "${colName}"`, false);
+}
+
+async function saveSheetConfig() {
+  const title = document.getElementById("sheetTitleInput").value.trim() || "DANH SÁCH ĐẢNG VIÊN CHI BỘ";
+  
+  const headers = [];
+  document.querySelectorAll(".col-name-input").forEach(input => {
+    const val = input.value.trim();
+    if (val) headers.push(val);
+  });
+  
+  let hasError = false;
+  REQUIRED_FIELDS.forEach(req => {
+    if (!headers.includes(req)) {
+      showMsg("sheetConfigMsg", `Thiếu cột bắt buộc: "${req}"`, true);
+      hasError = true;
+    }
+  });
+  if (hasError) return;
+  
+  showMsg("sheetConfigMsg", "Đang lưu...", false);
+  try {
+    const result = await apiCall("updateSheetConfig", {
+      adminPassword: session.adminPassword,
+      config: { title, headers }
+    });
+    
+    if (result.success) {
+      showMsg("sheetConfigMsg", result.message || "Lưu thành công!", false);
+      await loadAllMembers();
+      renderTable();
+      setTimeout(closeSheetConfigModal, 1200);
+    } else {
+      showMsg("sheetConfigMsg", result.message || "Có lỗi xảy ra.", true);
+    }
+  } catch (err) {
+    showMsg("sheetConfigMsg", "Lỗi kết nối: " + err.message, true);
+  }
+}
+
+/* ---------- EXPORT EXCEL ---------- */
+function openExportModal() {
+  if (session.role !== "admin") return;
+  const container = document.getElementById("exportColumns");
+  container.innerHTML = "";
+  
+  const displayCols = ["STT", "Họ và tên", "Ngày sinh", "Ngày vào đảng", "Ngày chính thức",
+    "Dân tộc", "Tôn giáo", "CCCD", "Thẻ đảng viên", "Học vấn (Vd: 10/10, 12/12...)",
+    "Chuyên môn", "LLCT", "Số điện thoại", "Chi bộ cũ",
+    "Miễn sinh hoạt", "Nơi thường trú"];
+  
+  displayCols.forEach(col => {
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" class="export-col-check" value="${col}" checked /> ${col}`;
+    container.appendChild(label);
+  });
+  
+  document.getElementById("exportAllColumns").checked = true;
+  document.getElementById("exportModalMsg").innerHTML = "";
+  document.getElementById("exportModalOverlay").classList.remove("hidden");
+}
+
+function closeExportModal() {
+  document.getElementById("exportModalOverlay").classList.add("hidden");
+}
+
+function toggleAllExportColumns() {
+  const checked = document.getElementById("exportAllColumns").checked;
+  document.querySelectorAll(".export-col-check").forEach(cb => cb.checked = checked);
+}
+
+function doExportExcel() {
+  const selectedCols = [];
+  document.querySelectorAll(".export-col-check:checked").forEach(cb => {
+    selectedCols.push(cb.value);
+  });
+  
+  if (selectedCols.length === 0) {
+    document.getElementById("exportModalMsg").innerHTML = '<div class="msg error">Vui lòng chọn ít nhất 1 cột để xuất.</div>';
+    return;
+  }
+  
+  let data = [...filteredMembers];
+  if (!data || data.length === 0) {
+    document.getElementById("exportModalMsg").innerHTML = '<div class="msg error">Không có dữ liệu để xuất.</div>';
+    return;
+  }
+  
+  // Sắp xếp
+  const sortField = document.getElementById("exportSortField").value;
+  const sortOrder = document.getElementById("exportSortOrder").value;
+  
+  data.sort((a, b) => {
+    let valA, valB;
+    switch (sortField) {
+      case "ho_ten":
+        valA = getGivenName(a["Họ và tên"]);
+        valB = getGivenName(b["Họ và tên"]);
+        if (valA === valB) {
+          valA = String(a["Họ và tên"] || "").toLowerCase();
+          valB = String(b["Họ và tên"] || "").toLowerCase();
+        }
+        return sortOrder === "asc" ? valA.localeCompare(valB, "vi") : valB.localeCompare(valA, "vi");
+      default:
+        return 0;
+    }
+  });
+  
+  // Tạo dữ liệu Excel
+  const excelData = data.map((m, idx) => {
+    const row = { "STT": idx + 1 };
+    selectedCols.forEach(col => {
+      if (col !== "STT") {
+        let val = m[col] || "";
+        if (typeof val === 'object' && val instanceof Date) {
+          val = formatDate(val);
+        }
+        row[col] = val;
+      }
+    });
+    return row;
+  });
+  
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(excelData);
+  XLSX.utils.book_append_sheet(wb, ws, "DanhSach");
+  
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `Danh_sach_dang_vien_${new Date().toISOString().slice(0,10)}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+  
+  document.getElementById("exportModalMsg").innerHTML = '<div class="msg success">✅ Xuất file thành công!</div>';
+  setTimeout(closeExportModal, 1500);
+}
+
+/* ---------- KHỞI TẠO TỰ ĐỘNG ---------- */
+document.addEventListener('DOMContentLoaded', function() {
+  // Tự động gọi initApp khi load trang để đồng bộ dữ liệu
+  autoInitApp();
+});
+
+async function autoInitApp() {
+  try {
+    const result = await apiCall('initApp', {});
+    if (result.success) {
+      console.log('✅ Khởi tạo ứng dụng thành công:', result.message);
+      if (result.count !== undefined) {
+        console.log(`📊 Đã đồng bộ ${result.count} đảng viên`);
+      }
+    } else {
+      console.warn('⚠️ Lỗi khởi tạo:', result.message);
+    }
+  } catch (err) {
+    console.error('❌ Lỗi kết nối khi khởi tạo:', err.message);
+  }
+}
+</script>
+</body>
+</html>

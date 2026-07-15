@@ -170,7 +170,7 @@ async function reloadDataFromSheet(evt) {
     btn.disabled = true;
     btn.textContent = "⏳ Đang tải...";
   }
-  showLoading("Đang kết nối đến Google Sheet...");
+  showLoading("Vui lòng chờ, đang kết nối dữ liệu...");
   try {
     await loadAllMembers();
     renderTable();

@@ -92,7 +92,7 @@ async function doMemberLogin() {
   if (!cccd) { showMsg("memberLoginMsg", "Vui lòng nhập số CCCD.", true); return; }
 
   showMsg("memberLoginMsg", "Đang xử lý...", false);
-  showLoading("Đang kết nối đến Google Sheet...");
+  showLoading("Vui lòng chờ, đang kết nối dữ liệu...");
   try {
     const result = await apiCall("memberLogin", { cccd, password });
     if (result.success) {

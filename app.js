@@ -117,7 +117,7 @@ async function doMemberLogin() {
 async function doAdminLogin() {
   const password = document.getElementById("adminPasswordInput").value;
   showMsg("adminLoginMsg", "Đang xử lý...", false);
-  showLoading("Đang kết nối đến Google Sheet...");
+  showLoading("Vui lòng chờ, đang kết nối dữ liệu...");
   try {
     const result = await apiCall("adminLogin", { password });
     if (result.success) {

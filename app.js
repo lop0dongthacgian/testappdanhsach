@@ -899,7 +899,7 @@ function addNewColumn() {
   
   container.appendChild(div);
   input.value = "";
-  showMsg("sheetConfigMsg", `Đã thêm cột "${name}"`, false);
+  showMsg("sheetConfigMsg", `Đã thêm cột "${name}"- nhấn "Lưu" để áp dụng thay đổi`, false);
 }
 
 function removeColumn(index) {

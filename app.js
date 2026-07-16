@@ -382,7 +382,7 @@ function updateAgeFilterButtonState() {
   if (!btn) return;
   btn.classList.toggle("btn-primary", isAgeFilterActive());
   btn.classList.toggle("btn-secondary", !isAgeFilterActive());
-  btn.textContent = isAgeFilterActive() ? "🎂 Kết quả tìm kiếm - Nhấn vào đây để thoát!" : "🎂 Lọc theo tuổi";
+  btn.textContent = isAgeFilterActive() ? "Kết quả tìm kiếm - Nhấn vào đây để thoát!" : "🎂 Lọc theo tuổi";
 }
 
 /* ---------- hiển thị bảng ---------- */
